@@ -46,7 +46,6 @@ class WebsiteCoupon(http.Controller):
         """This function will be executed when we click the apply button of the voucher code in the website.
         It will verify the validity and availability of that coupon. If it can be applied, the coupon  will be applied
         and coupon balance will also be updated"""
-
         curr_user = request.env.user
         coupon = request.env['gift.coupon'].sudo().search([('code', '=', promo_voucher)], limit=1)
         flag = True
@@ -79,7 +78,7 @@ class WebsiteCoupon(http.Controller):
             voucher_type = coupon.voucher.voucher_type
             voucher_val = coupon.voucher_val
             type = coupon.type
-            coupon_product = request.env['product.product'].sudo().search([('name', '=', 'Gift Coupon')], limit=1)
+            coupon_product = request.env.ref('website_coupon.discount_product').sudo()
             if coupon_product:
                 order = request.website.sale_get_order(force_create=1)
                 flag_product = False
