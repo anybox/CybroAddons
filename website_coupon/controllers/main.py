@@ -124,7 +124,7 @@ class WebsiteCoupon(http.Controller):
                                     if line.product_id.categ_id.name == product_id.name:
                                         amount_final += (voucher_val / 100) * line.price_total
                             elif voucher_type == 'all':
-                                amount_final = (voucher_val/100) * order.amount_total
+                                amount_final = (voucher_val/100) * (order.amount_total - order.amount_delivery)
                             coupon_product.product_tmpl_id.write({'list_price': -amount_final})
                         order._cart_update(product_id=coupon_product.id, set_qty=1, add_qty=1)
                         # updating coupon balance--------------
