@@ -30,10 +30,11 @@
     'website': 'https://www.cybrosys.com',
     'data': [
         'data/product_data.xml',
+        'views/assets.xml',
         'views/gift_voucher.xml',
         'views/applied_coupons.xml',
         'views/templates.xml',
-        'security/ir.model.access.csv'
+        'security/ir.model.access.csv',
     ],
     'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',

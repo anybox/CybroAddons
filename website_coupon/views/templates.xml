@@ -23,7 +23,7 @@
                     <div class="input-group">
                         <input name="promo_voucher" class="form-control" type="text" placeholder="code..." t-att-value="website_sale_order.pricelist_id.code or None" />
                         <div class="input-group-btn">
-                            <a class="btn btn-default a-submit">Apply</a>
+                            <a class="btn btn-default" id="add_coupon">Apply</a>
                         </div>
                     </div>
                 </form>

@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from dateutil import parser
-from odoo import http, tools, _
+from odoo import http
 from odoo.http import request
 
 
@@ -48,6 +48,7 @@ class WebsiteCoupon(http.Controller):
         and coupon balance will also be updated"""
         curr_user = request.env.user
         coupon = request.env['gift.coupon'].sudo().search([('code', '=', promo_voucher)], limit=1)
+        coupon_product = request.env.ref('website_coupon.discount_product').sudo()
         flag = True
         if coupon and coupon.total_avail > 0:
             applied_coupons = request.env['partner.coupon'].sudo().search([('coupon', '=', promo_voucher),
@@ -75,72 +76,34 @@ class WebsiteCoupon(http.Controller):
         else:
             flag = False
         if flag:
-            voucher_type = coupon.voucher.voucher_type
-            voucher_val = coupon.voucher_val
-            type = coupon.type
-            coupon_product = request.env.ref('website_coupon.discount_product').sudo()
-            if coupon_product:
-                order = request.website.sale_get_order(force_create=1)
-                flag_product = False
-                for line in order.order_line:
-                    if line.product_id.name == 'Gift Coupon':
-                        flag = False
-                        break
+            order = request.website.sale_get_order(force_create=1)
+            coupon_val, coupon_line, redirect = order.compute_coupon_value(coupon=coupon)
+            if redirect:
+                return request.redirect(redirect)
+            if coupon_val:
                 if flag and order.order_line:
-                    if voucher_type == 'product':
-                        # the voucher type is product ----------------------------
-                        categ_id = coupon.voucher.product_id
-                        for line in order.order_line:
-                            if line.product_id.name == categ_id.name:
-                                    flag_product = True
-                    elif voucher_type == 'category':
-                        # the voucher type is category ----------------------------
-                        product_id = coupon.voucher.product_categ
-                        for line in order.order_line:
-                            if line.product_id.categ_id.name == product_id.name:
-                                flag_product = True
-                    elif voucher_type == 'all':
-                        # the voucher is applicable to all products ----------------------------
-                        flag_product = True
-                    if flag_product:
-                        # the voucher is applicable --------------------------------------
-                        if type == 'fixed':
-                            # coupon type is 'fixed'--------------------------------------
-                            if voucher_val < order.amount_total:
-                                coupon_product.product_tmpl_id.write({'list_price': -voucher_val})
-
-                            else:
-                                return request.redirect("/shop/cart?coupon_not_available=3")
-                        elif type == 'percentage':
-                            # coupon type is percentage -------------------------------------
-                            amount_final = 0
-                            if voucher_type == 'product':
-                                for line in order.order_line:
-                                    if line.product_id.name == categ_id.name:
-                                        amount_final = (voucher_val / 100) * line.price_total
-                                        break
-                            elif voucher_type == 'category':
-                                for line in order.order_line:
-                                    if line.product_id.categ_id.name == product_id.name:
-                                        amount_final += (voucher_val / 100) * line.price_total
-                            elif voucher_type == 'all':
-                                amount_final = (voucher_val/100) * order.amount_total
-                            coupon_product.product_tmpl_id.write({'list_price': -amount_final})
-                        order._cart_update(product_id=coupon_product.id, set_qty=1, add_qty=1)
-                        # updating coupon balance--------------
-                        total = coupon.total_avail - 1
-                        coupon.write({'total_avail': total})
-                        # creating a record for this partner, i.e he is used this coupon once-----------
-                        if not applied_coupons:
-                            curr_user.partner_id.write({'applied_coupon': [(0, 0, {'partner_id': curr_user.partner_id.id,
-                                                                                         'coupon': coupon.code,
-                                                                                         'number': 1})]})
-                        else:
-                            applied_coupons.write({'number': applied_coupons.number + 1})
+                    coupon_product.product_tmpl_id.write({'list_price': coupon_val})
+                    order._cart_update(product_id=coupon_product.id, set_qty=1, add_qty=1, voucher_id=coupon.voucher.id)
+                    # updating coupon balance
+                    total = coupon.total_avail - 1
+                    coupon.write({'total_avail': total})
+                    # creating a record for this partner, i.e he is used this coupon once-----------
+                    if not applied_coupons:
+                        curr_user.partner_id.write(
+                            {'applied_coupon': [
+                                (0, 0, {
+                                    'partner_id': curr_user.partner_id.id,
+                                    'coupon': coupon.code,
+                                    'number': 1
+                                })
+                            ]}
+                        )
                     else:
-                        return request.redirect("/shop/cart?coupon_not_available=1")
+                        applied_coupons.write({'number': applied_coupons.number + 1})
                 else:
-                    return request.redirect("/shop/cart?coupon_not_available=2")
+                    return request.redirect("/shop/cart?coupon_not_available=1")
+            else:
+                return request.redirect("/shop/cart?coupon_not_available=2")
         else:
             return request.redirect("/shop/cart?coupon_not_available=1")
 
