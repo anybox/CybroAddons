@@ -1,0 +1,7 @@
+<odoo>
+    <template id="layout_assets_frontend" inherit_id="web.assets_frontend">
+        <xpath expr="." position="inside">
+            <script type="text/javascript" src="/website_coupon/static/src/js/website_coupon.js" />
+        </xpath>
+    </template>
+</odoo>
