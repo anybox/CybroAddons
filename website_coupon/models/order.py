@@ -87,6 +87,8 @@ class SaleOrder(models.Model):
             if line.product_id == coupon_product:
                 coupon_line = line
                 break
+        if not coupon_line and not coupon:
+            return False, False, False
         if coupon is None:
             voucher_type = coupon_line.voucher_id.voucher_type
             coupon = self.env['gift.coupon'].search([('voucher', '=', coupon_line.voucher_id.id)])
@@ -121,4 +123,5 @@ class SaleOrderLine(models.Model):
 
     _inherit = 'sale.order.line'
 
+    coupon_id = fields.Many2one('gift.coupon', default=False)
     voucher_id = fields.Many2one('gift.voucher', default=False)

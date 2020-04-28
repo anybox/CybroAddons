@@ -83,7 +83,7 @@ class WebsiteCoupon(http.Controller):
             if coupon_val:
                 if flag and order.order_line:
                     coupon_product.product_tmpl_id.write({'list_price': coupon_val})
-                    order._cart_update(product_id=coupon_product.id, set_qty=1, add_qty=1, voucher_id=coupon.voucher.id)
+                    order._cart_update(product_id=coupon_product.id, set_qty=1, add_qty=1, voucher_id=coupon.voucher.id, coupon_id=coupon.id)
                     # updating coupon balance
                     total = coupon.total_avail - 1
                     coupon.write({'total_avail': total})
