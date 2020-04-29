@@ -98,7 +98,7 @@ class SaleOrder(models.Model):
             coupon_val = coupon.voucher_val
             voucher_type = coupon.voucher.voucher_type
         if coupon_type == 'fixed':
-            if voucher_val >= order.amount_total:
+            if coupon_val >= self.amount_total:
                 redirect = "/shop/cart?coupon_not_available=3"
         if coupon_type == 'percentage':
             if voucher_type == 'product':
