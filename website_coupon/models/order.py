@@ -104,17 +104,17 @@ class SaleOrder(models.Model):
             if voucher_type == 'product':
                 for line in self.order_line:
                     if line.product_id.name == categ_id.name:
-                        coupon_value = (coupon_val / 100) * line.price_total
+                        coupon_value = (coupon_val / 100) * line.price_subtotal
                         break
             elif voucher_type == 'category':
                 for line in self.order_line:
                     if line.product_id.categ_id.name == product_id.name:
-                        coupon_value += (coupon_val / 100) * line.price_total
+                        coupon_value += (coupon_val / 100) * line.price_subtotal
             elif voucher_type == 'all':
                 for line in self.order_line:
                     if line == coupon_line:
                         continue
-                    coupon_value += (coupon_val/100) * line.price_total
+                    coupon_value += (coupon_val/100) * line.price_subtotal
             coupon_val = coupon_value
         return -coupon_val, coupon_line, redirect
 
