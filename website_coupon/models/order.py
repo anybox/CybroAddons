@@ -90,8 +90,8 @@ class SaleOrder(models.Model):
         if not coupon_line and not coupon:
             return False, False, False
         if coupon is None:
-            voucher_type = coupon_line.voucher_id.voucher_type
-            coupon = self.env['gift.coupon'].search([('voucher', '=', coupon_line.voucher_id.id)])
+            voucher_type = coupon_line.coupon_id.voucher.voucher_type
+            coupon = coupon_line.coupon_id
             coupon_type, coupon_val = coupon.type, coupon.voucher_val
         else:
             coupon_type = coupon.type
